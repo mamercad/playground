@@ -1,0 +1,38 @@
+---
+- hosts: localhost
+  connection: local
+
+  vars:
+    awx:
+      url: "{{ lookup('env', 'TOWER_HOST') }}"
+      username: "{{ lookup('env', 'TOWER_USERNAME') }}"
+      password: "{{ lookup('env', 'TOWER_PASSWORD') }}"
+    token:
+      description: Generated
+
+  tasks:
+
+    - name: Get all my tokens
+      uri:
+        url: "{{ awx.url }}/api/v2/tokens/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ awx.username }}"
+        password: "{{ awx.password }}"
+      register: tokens
+
+    - name: Create if not found
+      uri:
+        url: "{{ awx.url }}/api/v2/tokens/"
+        method: POST
+        force_basic_auth: yes
+        user: "{{ awx.username }}"
+        password: "{{ awx.password }}"
+        body_format: json
+        body:
+          description: "{{ token.description }}"
+          scope: read
+        status_code:
+          - 200
+          - 201
+      when: (tokens.json.results | selectattr('description', 'match', token.description) | list | length) == 0
