@@ -40,3 +40,4 @@
 
     - debug:
         msg: "{{ new_token.json.token }}"
+      when: new_token.json.token is defined
