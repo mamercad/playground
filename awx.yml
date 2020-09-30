@@ -35,4 +35,8 @@
         status_code:
           - 200
           - 201
+      register: new_token
       when: (tokens.json.results | selectattr('description', 'match', token.description) | list | length) == 0
+
+    - debug:
+        msg: "{{ new_token.json.token }}"
